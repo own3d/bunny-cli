@@ -8,7 +8,7 @@ With Bunny CDN's Storage Edge, your web applications benefit from replicated sto
 
 ## How do I use Bunny CLI?
 
-To install Bunny CLI, you need to be using Composer in your project. For more details about Composer, see the [Composer documentation](https://getcomposer.org/doc/).
+To install Bunny CLI, you need to be using Composer. For more details about Composer, see the [Composer documentation](https://getcomposer.org/doc/).
 
 ```bash
 composer global require own3d/bunny-cli
