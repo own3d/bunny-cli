@@ -39,7 +39,7 @@ We offer you a [GitHub Action for Bunny CLI](https://github.com/marketplace/acti
 
 ```
 - name: Deploy to Edge Storage
-  uses: ghostzero/bunny-action@main
+  uses: own3d/bunny-action@main
   env:
     BUNNY_API_ACCESS_KEY: ${{ secrets.BUNNY_API_ACCESS_KEY }}
     BUNNY_STORAGE_USERNAME: bunny-cli
@@ -64,12 +64,6 @@ A: No. Bunny CLI is a community-driven tool and is not affiliated with Bunny CDN
 ## Documentation
 
 For full documentation, visit [laravel-zero.com](https://laravel-zero.com/).
-
-## Support the development
-
-**Do you like this project? Support it by donating**
-
-- Patreon: [Donate](https://patreon.com/ghostzero)
 
 ## License
 
