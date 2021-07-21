@@ -14,106 +14,117 @@ class FileCompare
 
     private LocalStorage $localStorage;
     private EdgeStorage $edgeStorage;
-    private Command $output;
+    private Client $apiClient;
+    private Command $command;
 
-    public function __construct(LocalStorage $localStorage, EdgeStorage $edgeStorage, Command $output)
+    public function __construct(LocalStorage $localStorage, EdgeStorage $edgeStorage, Command $command)
     {
         $this->localStorage = $localStorage;
         $this->edgeStorage = $edgeStorage;
         $this->apiClient = new Client();
-        $this->output = $output;
+        $this->command = $command;
     }
 
-    public function compare(string $local, string $edge): void
+    public function compare(string $local, string $edge, float $start): void
     {
-        $this->output->info('- Hashing files...');
-        $localFiles = $this->localStorage->allFiles($local);
-        $this->output->info(sprintf('✔ Finished hashing %s files', count($localFiles)));
-        $this->output->info('- CDN diffing files...');
-        $edgeFiles = $this->edgeStorage->allFiles($edge);
+        $this->command->info('- Hashing files...');
+        $localFilesAndDirectories = $this->localStorage->allFiles($local);
+        $localFiles = array_filter($localFilesAndDirectories, fn(LocalFile $x) => !$x->isDirectory());
+        $this->command->info(sprintf('✔ Finished hashing %s files', count($localFiles)));
+        $this->command->info('- CDN fetching files and directories (progress is approximately)...');
+        $expectedMax = count($localFilesAndDirectories) - count($localFiles);
+        $bar = $this->command->getOutput()->createProgressBar($expectedMax);
+        $edgeFiles = $this->edgeStorage->allFiles($edge, fn() => $bar->advance());
+        $bar->finish();
+        $this->command->newLine();
+        $this->command->info(sprintf('✔ Finished fetching %s files and directories', count($edgeFiles)));
+        $this->command->info('- CDN diffing files and directories...');
 
-        $requests = [];
+        $requestsGroups = ['deletions' => [], 'uploads' => []];
 
         /** @var LocalFile $localFile */
         foreach ($localFiles as $localFile) {
-            if ($localFile->isDirectory()) {
-                continue;
-            }
-
             $filename = $localFile->getFilename($local);
             if ($match = $this->contains($edgeFiles, $filename, $edge)) {
                 if ($match->getChecksum() != $localFile->getChecksum()) {
-                    $requests[] = fn() => $this->edgeStorage->put($localFile, $local, $edge);
+                    $requestsGroups['uploads'][] = fn() => $this->edgeStorage->put($localFile, $local, $edge);
                 }
             } else {
-                $requests[] = fn() => $this->edgeStorage->put($localFile, $local, $edge);
+                $requestsGroups['uploads'][] = fn() => $this->edgeStorage->put($localFile, $local, $edge);
             }
         }
 
         /** @var EdgeFile $edgeFile */
         foreach ($edgeFiles as $edgeFile) {
             $filename = $edgeFile->getFilename($edge);
-            if (!$this->contains($localFiles, $filename, $local) && !$this->isReserved($filename)) {
-                $requests[] = fn() => $this->edgeStorage->delete($edgeFile);
+            if (!$this->contains($localFilesAndDirectories, $filename, $local) && !$this->isReserved($filename)) {
+                $requestsGroups['deletions'][$filename] = fn() => $this->edgeStorage->delete($edgeFile);
             }
         }
 
-        $this->output->info(sprintf('✔ CDN requesting %s files', $count = count($requests)));
+        $requestsGroups['deletions'] = Sort::unique($requestsGroups['deletions']);
 
-        if ($count > 0) {
-            $this->output->info(sprintf('- Synchronizing %s files', $count));
+        $this->command->info('✔ Finished diffing files and directories');
 
-            $bar = $this->output->getOutput()->createProgressBar($count);
+        foreach ($requestsGroups as $type => $requests) {
+            $operations = count($requests);
+            if ($operations > 0) {
+                $this->command->info(sprintf('- CDN requesting %s %s', $operations, $type));
 
-            $pool = new Pool($this->edgeStorage->getClient(), $requests, [
-                'concurrency' => 5,
-                'fulfilled' => function (Response $response, $index) use ($bar) {
-                    $bar->advance();
-                },
-                'rejected' => function (RequestException $reason, $index) use ($bar) {
-                    $bar->advance();
+                $bar = $this->command->getOutput()->createProgressBar($operations);
 
-                    if ($this->rejectedDue404Deletion($reason)) {
-                        return;
-                    }
+                $pool = new Pool($this->edgeStorage->getClient(), $requests, [
+                    'concurrency' => 5,
+                    'fulfilled' => function (Response $response, $index) use ($bar) {
+                        $bar->advance();
+                    },
+                    'rejected' => function (RequestException $reason, $index) use ($bar) {
+                        $bar->advance();
 
-                    $this->output->warn(sprintf(
-                        'Request rejected by bunny.net. Status: %s, Message: %s',
-                        $reason->getResponse()->getStatusCode(),
-                        $reason->getMessage()
-                    ));
-                },
-            ]);
+                        if ($this->rejectedDue404Deletion($reason)) {
+                            return;
+                        }
 
-            // Initiate the transfers and create a promise
-            $promise = $pool->promise();
+                        $this->command->warn(sprintf(
+                            'Request rejected by bunny.net. Status: %s, Message: %s',
+                            $reason->getResponse()->getStatusCode(),
+                            $reason->getMessage()
+                        ));
+                    },
+                ]);
 
-            $bar->start();
-            $promise->wait(); // Force the pool of requests to complete.
-            $bar->finish();
+                // Initiate the transfers and create a promise
+                $promise = $pool->promise();
 
-            $this->output->newLine();
+                $bar->start();
+                $promise->wait(); // Force the pool of requests to complete.
+                $bar->finish();
 
-            $this->output->info(sprintf('✔ Finished synchronizing %s files', $count));
+                $this->command->newLine();
+
+                $this->command->info(sprintf('✔ Finished synchronizing %s', $type));
+            }
         }
 
-        $this->output->info('- Waiting for deploy to go live...');
+        $this->command->info('- Waiting for deploy to go live...');
 
         $result = $this->apiClient->purgeCache($pullZoneId = config('bunny.pull_zone.id'));
 
         if (!$result->success()) {
-            $this->output->info('✔ Deploy is live (without flush)!');
+            $this->command->info('✔ Deploy is live (without flush)!');
             return;
         }
 
         $result = $this->apiClient->getPullZone($pullZoneId);
 
-        $this->output->info('✔ Deploy is live!');
-        $this->output->newLine();
+        $timeElapsedSecs = microtime(true) - $start;
+
+        $this->command->info(sprintf('✔ Deployment is live! (%ss)', number_format($timeElapsedSecs, 2)));
+        $this->command->newLine();
 
         foreach ($result->getData()->Hostnames as $hostname) {
             $schema = ($hostname->ForceSSL || $hostname->HasCertificate) ? 'https' : 'http';
-            $this->output->info(sprintf('Website URL: %s://%s', $schema, $hostname->Value));
+            $this->command->info(sprintf('Website URL: %s://%s', $schema, $hostname->Value));
         }
     }
 

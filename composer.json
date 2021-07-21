@@ -1,6 +1,6 @@
 {
     "name": "ghostzero/bunny",
-    "description": "The Laravel Zero Framework.",
+    "description": "Replicate and store your files to the edge!",
     "keywords": ["bunny", "cdn", "console", "cli"],
     "homepage": "https://github.com/ghostzero/bunny-cli",
     "type": "project",

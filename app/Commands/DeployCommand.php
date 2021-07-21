@@ -32,6 +32,8 @@ class DeployCommand extends Command
      */
     public function handle(): int
     {
+        $start = microtime(true);
+
         $edgeStorage = new EdgeStorage();
         $localStorage = new LocalStorage();
         $fileCompare = new FileCompare($localStorage, $edgeStorage, $this);
@@ -45,7 +47,7 @@ class DeployCommand extends Command
 
         $edgePath = sprintf('/%s', config('bunny.storage.username'));
 
-        $fileCompare->compare($localPath, $edgePath);
+        $fileCompare->compare($localPath, $edgePath, $start);
 
         return 0;
     }

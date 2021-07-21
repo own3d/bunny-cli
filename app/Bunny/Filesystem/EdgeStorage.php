@@ -6,6 +6,7 @@ use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Promise\PromiseInterface;
 use GuzzleHttp\RequestOptions;
+use Illuminate\Console\OutputStyle;
 use Illuminate\Support\Str;
 use Psr\Http\Message\ResponseInterface;
 
@@ -20,7 +21,7 @@ class EdgeStorage
         ]);
     }
 
-    public function allFiles(string $path, &$results = array())
+    public function allFiles(string $path, callable $advance = null, &$results = array())
     {
         $promise = $this->client->getAsync(self::normalizePath($path, true), [
             RequestOptions::HEADERS => [
@@ -29,7 +30,7 @@ class EdgeStorage
         ]);
 
         $promise->then(
-            function (ResponseInterface $res) use (&$results) {
+            function (ResponseInterface $res) use ($advance, &$results) {
                 $files = array_map(
                     fn($file) => new EdgeFile($file),
                     json_decode($res->getBody()->getContents(), false)
@@ -38,10 +39,13 @@ class EdgeStorage
                 foreach ($files as $file) {
                     $results[] = $file;
                     if ($file->isDirectory()) {
-                        $this->allFiles($file->getFilename(), $results);
+                        $this->allFiles($file->getFilename(), $advance, $results);
                     }
                 }
 
+                if ($advance) {
+                    $advance();
+                }
             },
             function (RequestException $e) {
                 echo $e->getMessage() . "\n";

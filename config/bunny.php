@@ -2,7 +2,7 @@
 
 return [
     'storage' => [
-        'hostname' => env('BUNNY_STORAGE_HOSTNAME'),
+        'hostname' => env('BUNNY_STORAGE_HOSTNAME', 'storage.bunnycdn.com'),
         'username' => env('BUNNY_STORAGE_USERNAME'),
         'password' => env('BUNNY_STORAGE_PASSWORD'),
     ],
