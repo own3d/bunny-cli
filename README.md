@@ -61,10 +61,6 @@ We hope that together with Bunny CDN, we can solve this problem.
 
 A: No. Bunny CLI is a community-driven tool and is not affiliated with Bunny CDN.
 
-## Documentation
-
-For full documentation, visit [laravel-zero.com](https://laravel-zero.com/).
-
 ## License
 
 Bunny CLI is an open-source software licensed under the Apache 2.0 license.
