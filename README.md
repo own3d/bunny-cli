@@ -8,6 +8,12 @@ With Bunny CDN's Storage Edge, your web applications benefit from replicated sto
 
 ## How do I use Bunny CLI?
 
+To install Bunny CLI, you need to be using Composer in your project. For more details about Composer, see the [Composer documentation](https://getcomposer.org/doc/).
+
+```bash
+composer global require own3d/bunny-cli
+```
+
 Bunny CLI currently only comes with a `deploy` command. With this command, you can easily synconizise your `dist` folder with your edge storage.
 
 > All files in the edge storage that are **not** in your local `dist` directory will be deleted.
