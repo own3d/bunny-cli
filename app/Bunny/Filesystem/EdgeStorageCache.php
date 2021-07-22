@@ -4,12 +4,14 @@ namespace App\Bunny\Filesystem;
 
 use App\Bunny\Filesystem\Exceptions\FileNotFoundException;
 use App\Bunny\Filesystem\Exceptions\FilesystemException;
+use App\Bunny\Lock\Exceptions\LockException;
+use App\Bunny\Lock\Lock;
 use Psr\Http\Message\ResponseInterface;
 
 class EdgeStorageCache
 {
     private EdgeStorage $edgeStorage;
-    private string $filename = '.well-known/bunny.sha256';
+    private string $filename = Lock::DEFAULT_FILENAME;
 
     public function __construct(EdgeStorage $edgeStorage)
     {
@@ -47,18 +49,22 @@ class EdgeStorageCache
         return $response->getStatusCode() === 200;
     }
 
+    /**
+     * @throws FileNotFoundException
+     * @throws LockException
+     */
     private function extract(string $contents): array
     {
-        if (!$array = json_decode($contents, true)) {
-            throw new FileNotFoundException('Cannot parse cache file.');
-        }
+        $lock = Lock::parse($contents, $this->filename);
 
-        return array_map(fn(array $x) => EdgeFile::fromArray($x), $array);
+        return array_map(fn(array $x) => EdgeFile::fromArray($x), $lock->getFiles());
     }
 
     private function hydrate(array $files, string $search = '', string $replace = ''): string
     {
-        return json_encode(array_map(fn(LocalFile $x) => $x->toArray($search, $replace), $files), JSON_PRETTY_PRINT);
+        return Lock::fromFiles(
+            array_map(fn(LocalFile $x) => $x->toArray($search, $replace), $files)
+        )->toString();
     }
 
     public function setFilename(string $filename)

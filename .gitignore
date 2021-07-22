@@ -7,5 +7,6 @@
 .phpunit.result.cache
 .env
 *.bk
+bunny-cli.lock
+bunny-cli.lock.bk
 /dist*
-*.sha256

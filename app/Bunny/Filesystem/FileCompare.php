@@ -168,9 +168,9 @@ class FileCompare
      */
     private function getEdgeFiles(array $options, string $edge, int $expectedMax): array
     {
-        $this->edgeStorage->getStorageCache()->setFilename($options[CompareOptions::SHA256_NAME]);
+        $this->edgeStorage->getStorageCache()->setFilename($options[CompareOptions::LOCK_FILE]);
 
-        if ($options[CompareOptions::NO_SHA256_CACHE]) {
+        if ($options[CompareOptions::NO_SHA256_VERIFICATION]) {
             return $this->getAllFilesRecursive($expectedMax, $edge);
         }
 
@@ -180,7 +180,7 @@ class FileCompare
         } catch (FileNotFoundException $exception) {
             $this->command->warn(sprintf(
                 '⚠ Cannot fetch %s from storage due "%s". Using recursive fallback...',
-                $options[CompareOptions::SHA256_NAME],
+                $options[CompareOptions::LOCK_FILE],
                 $exception->getMessage()
             ));
             return $this->getAllFilesRecursive($expectedMax, $edge);

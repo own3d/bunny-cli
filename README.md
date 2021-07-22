@@ -10,7 +10,7 @@ With Bunny CDN's Storage Edge, your web applications benefit from replicated sto
 
 Bunny CLI currently only comes with a `deploy` command. With this command, you can easily synconizise your `dist` folder with your edge storage.
 
-> All files in the edge storage that are **not** in your local `dist` directory will be deleted.
+> **IMPORTANT**: All files in the edge storage that are **not** in your local `dist` directory will be deleted.
 
 ```plain
 ➜ $ bunny deploy  
@@ -42,6 +42,16 @@ We offer you a [GitHub Action for Bunny CLI](https://github.com/marketplace/acti
   with:
     args: deploy --dir=dist
 ```
+
+## Secure your `.well-known/bunny-cli.lock` file
+
+Bunny CLI generates a lock file, which by default is located at `.well-known/bunny-cli.lock`. This file locks the files of your project to a known state. To prevent this from being publicly accessible it is recommended to create a new edge rule in your pull zone. You can use the following example as a template:
+
+Action: `Block Request`  
+Condition Matching: `Match Any`  
+Condition: If `Request URL` `Match Any` `*/.well-known/bunny-cli.lock`
+
+Now the file should no longer be accessible. It can take a few minutes until your Edge Rule is active.
 
 ## Frequently Asked Questions
 
