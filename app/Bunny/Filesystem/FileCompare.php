@@ -12,7 +12,10 @@ use Illuminate\Console\Command;
 
 class FileCompare
 {
-    private const RESERVED_FILENAMES = [];
+    private const RESERVED_FILENAMES = [
+        '/.well-known',
+        '/.well-known/bunny-cli.lock',
+    ];
 
     private LocalStorage $localStorage;
     private EdgeStorage $edgeStorage;
@@ -109,7 +112,7 @@ class FileCompare
             }
         }
 
-        if (!$options[CompareOptions::NO_SHA256_GENERATION]) {
+        if (!$options[CompareOptions::NO_LOCK_GENERATION]) {
             $this->command->info('- Generating cache for current deployment...');
 
             if (!$this->edgeStorage->getStorageCache()->save($local, $edge, $localFilesAndDirectories)) {
@@ -170,7 +173,7 @@ class FileCompare
     {
         $this->edgeStorage->getStorageCache()->setFilename($options[CompareOptions::LOCK_FILE]);
 
-        if ($options[CompareOptions::NO_SHA256_VERIFICATION]) {
+        if ($options[CompareOptions::NO_LOCK_VERIFICATION]) {
             return $this->getAllFilesRecursive($expectedMax, $edge);
         }
 

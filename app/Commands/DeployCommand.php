@@ -19,8 +19,8 @@ class DeployCommand extends Command
      */
     protected $signature = 'deploy
         {--dir=dist : Root directory to upload}
-        {--no-sha256-verification : Skips checksum verification from bunny-cli.lock and polls the storage api recursively instead}
-        {--no-sha256-generation : Skips checksum generation for bunny-cli.lock}
+        {--no-lock-verification : Skips checksum verification from bunny-cli.lock and polls the storage api recursively instead}
+        {--no-lock-generation : Skips generation of .well-known/bunny-cli.lock}
         {--lock-file=.well-known/bunny-cli.lock : Changes the location and filename of .well-known/bunny-cli.lock}
         {--dry-run : Outputs the operations but will not execute anything}';
 
@@ -62,8 +62,8 @@ class DeployCommand extends Command
         try {
             $fileCompare->compare($localPath, $edgePath, [
                 CompareOptions::START => $start,
-                CompareOptions::NO_SHA256_VERIFICATION => $this->option('no-sha256-verification'),
-                CompareOptions::NO_SHA256_GENERATION => $this->option('no-sha256-generation'),
+                CompareOptions::NO_LOCK_VERIFICATION => $this->option('no-lock-verification'),
+                CompareOptions::NO_LOCK_GENERATION => $this->option('no-lock-generation'),
                 CompareOptions::LOCK_FILE => $this->option('lock-file'),
                 CompareOptions::DRY_RUN => $this->option('dry-run'),
             ]);
