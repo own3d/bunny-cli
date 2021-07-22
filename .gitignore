@@ -8,3 +8,4 @@
 .env
 *.bk
 /dist*
+*.sha256

@@ -3,6 +3,8 @@
 namespace App\Bunny\Filesystem;
 
 use App\Bunny\Client;
+use App\Bunny\Filesystem\Exceptions\FileNotFoundException;
+use Exception;
 use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Pool;
 use GuzzleHttp\Psr7\Response;
@@ -25,18 +27,17 @@ class FileCompare
         $this->command = $command;
     }
 
-    public function compare(string $local, string $edge, float $start): void
+    /**
+     * @throws Exceptions\FilesystemException
+     */
+    public function compare(string $local, string $edge, array $options): void
     {
         $this->command->info('- Hashing files...');
         $localFilesAndDirectories = $this->localStorage->allFiles($local);
         $localFiles = array_filter($localFilesAndDirectories, fn(LocalFile $x) => !$x->isDirectory());
         $this->command->info(sprintf('✔ Finished hashing %s files', count($localFiles)));
-        $this->command->info('- CDN fetching files and directories (progress is approximately)...');
         $expectedMax = count($localFilesAndDirectories) - count($localFiles);
-        $bar = $this->command->getOutput()->createProgressBar($expectedMax);
-        $edgeFiles = $this->edgeStorage->allFiles($edge, fn() => $bar->advance());
-        $bar->finish();
-        $this->command->newLine();
+        $edgeFiles = $this->getEdgeFiles($options, $edge, $expectedMax);
         $this->command->info(sprintf('✔ Finished fetching %s files and directories', count($edgeFiles)));
         $this->command->info('- CDN diffing files and directories...');
 
@@ -93,33 +94,45 @@ class FileCompare
                     },
                 ]);
 
-                // Initiate the transfers and create a promise
-                $promise = $pool->promise();
+                if (!$options[CompareOptions::DRY_RUN]) {
+                    // Initiate the transfers and create a promise
+                    $promise = $pool->promise();
 
-                $bar->start();
-                $promise->wait(); // Force the pool of requests to complete.
-                $bar->finish();
+                    $bar->start();
+                    $promise->wait(); // Force the pool of requests to complete.
+                    $bar->finish();
 
-                $this->command->newLine();
+                    $this->command->newLine();
+                }
 
                 $this->command->info(sprintf('✔ Finished synchronizing %s', $type));
             }
         }
 
+        if (!$options[CompareOptions::NO_SHA256_GENERATION]) {
+            $this->command->info('- Generating cache for current deployment...');
+
+            if (!$this->edgeStorage->getStorageCache()->save($local, $edge, $localFilesAndDirectories)) {
+                $this->command->info('✔ Cache published successfully.');
+            } else {
+                $this->command->error('✘ Error publishing cache.');
+            }
+        }
+        $pullZoneId = config('bunny.pull_zone.id');
+
         $this->command->info('- Waiting for deploy to go live...');
 
-        $result = $this->apiClient->purgeCache($pullZoneId = config('bunny.pull_zone.id'));
-
-        if (!$result->success()) {
-            $this->command->info('✔ Deploy is live (without flush)!');
-            return;
+        if (!$options[CompareOptions::DRY_RUN]) {
+            $flushResult = $this->apiClient->purgeCache($pullZoneId);
         }
 
         $result = $this->apiClient->getPullZone($pullZoneId);
 
-        $timeElapsedSecs = microtime(true) - $start;
-
-        $this->command->info(sprintf('✔ Deployment is live! (%ss)', number_format($timeElapsedSecs, 2)));
+        $timeElapsedSecs = microtime(true) - $options[CompareOptions::START];
+        $message = !isset($flushResult) || !$result->success()
+            ? '✔ Deployment is live (without flush)! (%ss)'
+            : '✔ Deployment is live! (%ss)';
+        $this->command->info(sprintf($message, number_format($timeElapsedSecs, 2)));
         $this->command->newLine();
 
         foreach ($result->getData()->Hostnames as $hostname) {
@@ -148,5 +161,41 @@ class FileCompare
     {
         return $reason->getRequest()->getMethod() === 'DELETE'
             && in_array($reason->getResponse()->getStatusCode(), [404, 400, 500], true);
+    }
+
+    /**
+     * @throws Exceptions\FilesystemException
+     */
+    private function getEdgeFiles(array $options, string $edge, int $expectedMax): array
+    {
+        $this->edgeStorage->getStorageCache()->setFilename($options[CompareOptions::SHA256_NAME]);
+
+        if ($options[CompareOptions::NO_SHA256_CACHE]) {
+            return $this->getAllFilesRecursive($expectedMax, $edge);
+        }
+
+        try {
+            $this->command->info('- CDN fetching files and directories from cache...');
+            return $this->edgeStorage->getStorageCache()->parse($edge);
+        } catch (FileNotFoundException $exception) {
+            $this->command->warn(sprintf(
+                '⚠ Cannot fetch %s from storage due "%s". Using recursive fallback...',
+                $options[CompareOptions::SHA256_NAME],
+                $exception->getMessage()
+            ));
+            return $this->getAllFilesRecursive($expectedMax, $edge);
+        } catch (Exception $e) {
+            throw $e;
+        }
+    }
+
+    private function getAllFilesRecursive(int $expectedMax, string $edge): array
+    {
+        $this->command->info('- CDN fetching files and directories (progress is approximately)...');
+        $bar = $this->command->getOutput()->createProgressBar($expectedMax);
+        $result = $this->edgeStorage->allFiles($edge, fn() => $bar->advance());
+        $bar->finish();
+        $this->command->newLine();
+        return $result;
     }
 }
