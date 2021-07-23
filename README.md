@@ -1,5 +1,7 @@
 # Bunny CLI - Replicate and store your files to the edge!
 
+> Please use Bunny CLI for development purposes only. We have not yet released a stable release.
+
 ## What is Bunny CLI?
 
 Bunny CLI is a tool for the console to upload frontend frameworks such as Angular, Vue.js, React, or more recently, Blazor quickly to the Edge Store on Bunny CDN.
