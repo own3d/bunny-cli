@@ -1,12 +1,12 @@
-# Bunny CLI - Replicate and Store Your Files to the Edge!
+# Bunny CLI - Replicate and store your files to the edge!
 
-## What Is Bunny CLI?
+## What is Bunny CLI?
 
 Bunny CLI is a tool for the console to upload frontend frameworks such as Angular, Vue.js, React, or more recently, Blazor quickly to the Edge Store on Bunny CDN.
 
 With Bunny CDN's Storage Edge, your web applications benefit from replicated storage zones, a global content delivery network that hosts files in 5 different regions worldwide and accelerates everything through a worldwide content delivery network with over 54+ PoPs.
 
-## How Do I Use Bunny CLI?
+## How do I use Bunny CLI?
 
 To install Bunny CLI, you need to be using Composer. For more details about Composer, see the [Composer documentation](https://getcomposer.org/doc/).
 
@@ -44,7 +44,7 @@ When `bunny init` finishes, it saves the environment variables in your .env file
 
 You can view these environment variables at any other time using the `bunny env:list` command.
 
-### Deploy Your First Project
+### Deploy your first project
 
 With the `bunny deploy` command, you can easily synchronize your `dist` folder with your edge storage.
 
