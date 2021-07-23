@@ -29,7 +29,7 @@ class DeployCommand extends Command
      *
      * @var string
      */
-    protected $description = 'Deploy dist folder to edge storage';
+    protected $description = 'Deploy a dist folder to edge storage';
 
     /**
      * Execute the console command.
@@ -74,17 +74,5 @@ class DeployCommand extends Command
         }
 
         return 0;
-    }
-
-
-    /**
-     * Define the command's schedule.
-     *
-     * @param Schedule $schedule
-     * @return void
-     */
-    public function schedule(Schedule $schedule): void
-    {
-        // $schedule->command(static::class)->everyMinute();
     }
 }

@@ -37,4 +37,13 @@ class Client
 
         return new Result($response);
     }
+
+    public function getStorageZones(): Result
+    {
+        return $this->request('GET', 'storagezone', [
+            RequestOptions::HEADERS => [
+                'AccessKey' => config('bunny.api.access_key'),
+            ],
+        ]);
+    }
 }

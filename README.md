@@ -1,12 +1,12 @@
-# Bunny CLI - Replicate and store your files to the edge!
+# Bunny CLI - Replicate and Store Your Files to the Edge!
 
-## What is Bunny CLI?
+## What Is Bunny CLI?
 
 Bunny CLI is a tool for the console to upload frontend frameworks such as Angular, Vue.js, React, or more recently, Blazor quickly to the Edge Store on Bunny CDN.
 
 With Bunny CDN's Storage Edge, your web applications benefit from replicated storage zones, a global content delivery network that hosts files in 5 different regions worldwide and accelerates everything through a worldwide content delivery network with over 54+ PoPs.
 
-## How do I use Bunny CLI?
+## How Do I Use Bunny CLI?
 
 To install Bunny CLI, you need to be using Composer. For more details about Composer, see the [Composer documentation](https://getcomposer.org/doc/).
 
@@ -20,7 +20,33 @@ If you want to update the Bunny CLI, just execute the following command:
 composer global update own3d/bunny-cli
 ```
 
-Bunny CLI currently only comes with a `deploy` command. With this command, you can easily synconizise your `dist` folder with your edge storage.
+After you install Bunny CLI, the next step is typically run the `bunny init` command to perform initial setup tasks. You can also run `bunny init` at a later time to change your settings or create a new configuration.
+
+### Run Bunny Init
+
+To initialize Bunny CLI:
+
+1. Run `bunny init`:
+
+```bash
+bunny init
+```
+
+2. Configure your API credentials.
+
+In order for the Bunny CLI to work properly you need to store your Bunny CDN API token. You can find your API token in your [Account Settings](https://panel.bunny.net/account).
+
+3. Choose a current Storage Zone if prompted.
+
+If you only have access to one storage zone, including the default pull zone, `bunny init` selects it for you.
+
+When `bunny init` finishes, it saves the environment variables in your .env file.
+
+You can view these environment variables at any other time using the `bunny env:list` command.
+
+### Deploy Your First Project
+
+With the `bunny deploy` command, you can easily synchronize your `dist` folder with your edge storage.
 
 > **IMPORTANT**: All files in the edge storage that are **not** in your local `dist` directory will be deleted.
 
@@ -57,11 +83,18 @@ We offer you a [GitHub Action for Bunny CLI](https://github.com/marketplace/acti
 
 ## Environment Variables
 
+You can customize your environment file at any time. The following commands are available for this purpose:
 
+| Command                 | Description                                            |
+|-------------------------|--------------------------------------------------------|
+| `env:list`              | List all current environment variables.                |
+| `env:set {key} {value}` | Set and save an environment variable in the .env file. |
+| `env:backup {file}`     | Backup .env file into a given file.                    |
+| `env:restore {file}`    | Restore .env file from a given file.                   |
 
 ## Secure your `.well-known/bunny-cli.lock` file
 
-Bunny CLI generates a lock file, which by default is located at `.well-known/bunny-cli.lock`. This file locks the files of your project to a known state. To prevent this from being publicly accessible it is recommended to create a new edge rule in your pull zone. You can use the following example as a template:
+Bunny CLI generates a lock file, which is located at `.well-known/bunny-cli.lock` by default. This file locks the files of your project to a known state. To prevent this from being publicly accessible it is recommended to create a new edge rule in your pull zone. You can use the following example as a template:
 
 Action: `Block Request`  
 Condition Matching: `Match Any`  
