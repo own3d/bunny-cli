@@ -4,6 +4,7 @@ namespace App\Commands\Env;
 
 use Dotenv\Dotenv;
 use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Storage;
 use LaravelZero\Framework\Commands\Command;
 
 class EnvListCommand extends Command
@@ -29,18 +30,17 @@ class EnvListCommand extends Command
      */
     public function handle(): int
     {
-        $envFilePath = App::environmentFilePath();
-        $this->info(sprintf("The following environment file is used: '%s'", $envFilePath));
+        $this->info(sprintf("The following environment file is used: '%s'", App::environmentFilePath()));
 
-        if (file_exists($envFilePath)) {
-            $env = Dotenv::parse(file_get_contents($envFilePath));
+        if (Storage::exists('.env')) {
+            $env = Dotenv::parse(Storage::get('.env'));
         } else {
             $this->warn('The environment file does not exist.');
 
             return 1;
         }
 
-        if(empty($env)) {
+        if (empty($env)) {
             $this->warn('The environment file is empty.');
 
             return 2;

@@ -17,6 +17,21 @@ $app = new LaravelZero\Framework\Application(
 
 /*
 |--------------------------------------------------------------------------
+| Set the correct path for the environment file
+|--------------------------------------------------------------------------
+|
+| If the current directory has a .env file then we will use that instead
+| of the global one, otherwise the one under the user homepage.
+|
+*/
+
+if (!file_exists(dirname(__DIR__) . DIRECTORY_SEPARATOR . '.env')) {
+    $app->useEnvironmentPath(getenv('HOME') . DIRECTORY_SEPARATOR . '.bunny-cli');
+}
+
+
+/*
+|--------------------------------------------------------------------------
 | Bind Important Interfaces
 |--------------------------------------------------------------------------
 |

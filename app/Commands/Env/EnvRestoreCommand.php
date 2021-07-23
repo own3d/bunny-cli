@@ -3,6 +3,7 @@
 namespace App\Commands\Env;
 
 use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Storage;
 use LaravelZero\Framework\Commands\Command;
 
 class EnvRestoreCommand extends Command
@@ -28,10 +29,9 @@ class EnvRestoreCommand extends Command
      */
     public function handle(): int
     {
-        $envFilePath = App::environmentFilePath();
-        $this->info(sprintf("The following environment file is used: '%s'", $envFilePath));
+        $this->info(sprintf("The following environment file is used: '%s'", App::environmentFilePath()));
 
-        file_put_contents($envFilePath, file_get_contents($this->argument('file')));
+        Storage::put('.env', Storage::get($this->argument('file')));
 
         $this->info('The environment file was successfully restored.');
 

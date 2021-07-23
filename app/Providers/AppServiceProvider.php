@@ -16,9 +16,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        Storage::extend('ftp', function ($app, $config) {
-            return new Filesystem(new FtpAdapter($config));
-        });
+        //
     }
 
     /**

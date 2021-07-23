@@ -7,6 +7,7 @@ use App\Commands\Env\EnvSetCommand;
 use Dotenv\Dotenv;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Storage;
 use LaravelZero\Framework\Commands\Command;
 
 class InitCommand extends Command
@@ -36,11 +37,10 @@ class InitCommand extends Command
      */
     public function handle(Client $client): int
     {
-        $envFilePath = App::environmentFilePath();
-        $this->info(sprintf("The following environment file is used: '%s'", $envFilePath));
+        $this->info(sprintf("The following environment file is used: '%s'", App::environmentFilePath()));
 
-        if (file_exists($envFilePath)) {
-            $env = Dotenv::parse(file_get_contents($envFilePath));
+        if (Storage::exists('.env')) {
+            $env = Dotenv::parse(Storage::get('.env'));
         } else {
             $this->warn('The environment file does not exist. Creating a new one...');
             $env = [];
@@ -102,7 +102,7 @@ class InitCommand extends Command
             $this->warn('No pull zone was specified, therefore no pull zone is flushed during deployment.');
         }
 
-        file_put_contents($envFilePath, EnvSetCommand::updateEnv($env));
+        Storage::put('.env', EnvSetCommand::updateEnv($env));
 
         $this->info('The environment file was successfully updated.');
 

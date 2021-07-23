@@ -3,6 +3,7 @@
 namespace App\Commands\Env;
 
 use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Storage;
 use LaravelZero\Framework\Commands\Command;
 
 class EnvBackupCommand extends Command
@@ -28,10 +29,9 @@ class EnvBackupCommand extends Command
      */
     public function handle(): int
     {
-        $envFilePath = App::environmentFilePath();
-        $this->info(sprintf("The following environment file is used: '%s'", $envFilePath));
+        $this->info(sprintf("The following environment file is used: '%s'", App::environmentFilePath()));
 
-        file_put_contents($this->argument('file'), file_get_contents($envFilePath));
+        Storage::put($this->argument('file'), Storage::get('.env'));
 
         $this->info('The environment file was successfully backed up.');
 
