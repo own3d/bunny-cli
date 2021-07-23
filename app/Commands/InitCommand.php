@@ -5,7 +5,6 @@ namespace App\Commands;
 use App\Bunny\Client;
 use App\Commands\Env\EnvSetCommand;
 use Dotenv\Dotenv;
-use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\App;
 use LaravelZero\Framework\Commands\Command;

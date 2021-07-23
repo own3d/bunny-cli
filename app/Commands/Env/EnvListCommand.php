@@ -3,7 +3,6 @@
 namespace App\Commands\Env;
 
 use Dotenv\Dotenv;
-use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Support\Facades\App;
 use LaravelZero\Framework\Commands\Command;
 

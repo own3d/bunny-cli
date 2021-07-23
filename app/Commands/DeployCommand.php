@@ -7,7 +7,6 @@ use App\Bunny\Filesystem\EdgeStorage;
 use App\Bunny\Filesystem\Exceptions\FilesystemException;
 use App\Bunny\Filesystem\FileCompare;
 use App\Bunny\Filesystem\LocalStorage;
-use Illuminate\Console\Scheduling\Schedule;
 use LaravelZero\Framework\Commands\Command;
 
 class DeployCommand extends Command
