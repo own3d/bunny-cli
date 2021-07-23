@@ -14,6 +14,12 @@ To install Bunny CLI, you need to be using Composer. For more details about Comp
 composer global require own3d/bunny-cli
 ```
 
+If you want to update the Bunny CLI, just execute the following command:
+
+```bash
+composer global update own3d/bunny-cli
+```
+
 Bunny CLI currently only comes with a `deploy` command. With this command, you can easily synconizise your `dist` folder with your edge storage.
 
 > **IMPORTANT**: All files in the edge storage that are **not** in your local `dist` directory will be deleted.
@@ -48,6 +54,10 @@ We offer you a [GitHub Action for Bunny CLI](https://github.com/marketplace/acti
   with:
     args: deploy --dir=dist
 ```
+
+## Environment Variables
+
+
 
 ## Secure your `.well-known/bunny-cli.lock` file
 

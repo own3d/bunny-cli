@@ -23,7 +23,6 @@
         "guzzlehttp/guzzle": "^7.0",
         "laminas/laminas-text": "^2.8",
         "laravel-zero/framework": "^8.8",
-        "laravel-zero/phar-updater": "^1.0.6",
         "mockery/mockery": "^1.4.3",
         "pestphp/pest": "^1.3"
     },
