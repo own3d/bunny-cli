@@ -5,7 +5,7 @@ return [
     'disks' => [
         'local' => [
             'driver' => 'local',
-            'root' => getenv('HOME') . DIRECTORY_SEPARATOR . '.bunny-cli',
+            'root' => bunny_cli_path(),
         ],
     ],
 ];

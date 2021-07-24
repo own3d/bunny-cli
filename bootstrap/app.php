@@ -26,7 +26,7 @@ $app = new LaravelZero\Framework\Application(
 */
 
 if (!file_exists(dirname(__DIR__) . DIRECTORY_SEPARATOR . '.env')) {
-    $app->useEnvironmentPath(getenv('HOME') . DIRECTORY_SEPARATOR . '.bunny-cli');
+    $app->useEnvironmentPath(bunny_cli_path());
 }
 
 
