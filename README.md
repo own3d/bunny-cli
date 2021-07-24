@@ -59,7 +59,7 @@ With the `bunny deploy` command, you can easily synchronize your `dist` folder w
 - CDN diffing files...  
 ✔ CDN requesting 10875 files  
 - Synchronizing 10875 files  
- 10875/10875 [▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓] 100%  
+ 10875/10875 [============================] 100%  
 ✔ Finished synchronizing 10875 files  
 - Waiting for deploy to go live...  
 ✔ Deployment is live! (322.96s)

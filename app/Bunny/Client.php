@@ -9,6 +9,7 @@ class Client
     public function __construct()
     {
         $this->client = new \GuzzleHttp\Client([
+            'http_errors' => false,
             'base_uri' => 'https://api.bunny.net/',
         ]);
     }

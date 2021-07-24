@@ -125,7 +125,7 @@ class FileCompare
 
         $this->command->info('- Waiting for deploy to go live...');
 
-        if (!$options[CompareOptions::DRY_RUN]) {
+        if (!$options[CompareOptions::DRY_RUN] && $pullZoneId) {
             $flushResult = $this->apiClient->purgeCache($pullZoneId);
         }
 

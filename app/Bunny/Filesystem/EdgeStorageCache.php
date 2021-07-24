@@ -20,6 +20,7 @@ class EdgeStorageCache
 
     /**
      * @throws FilesystemException
+     * @throws LockException
      */
     public function parse(string $path): array
     {
@@ -27,8 +28,6 @@ class EdgeStorageCache
             sprintf('%s/%s', $path, $this->filename),
             File::EMPTY_SHA256,
         ));
-
-        file_put_contents(base_path(sprintf('%s.bk', basename($this->filename))), $contents);
 
         return $this->extract($contents);
     }
@@ -38,8 +37,6 @@ class EdgeStorageCache
         $filename = sprintf('%s/%s', $edge, $this->filename);
         $contents = $this->hydrate($files, $local, $edge);
         $checksum = strtoupper(hash('sha256', $contents));
-
-        file_put_contents(base_path(sprintf('%s', basename($this->filename))), $contents);
 
         $promise = $this->edgeStorage->put(new LocalFile($filename, $checksum, $contents));
 

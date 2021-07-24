@@ -46,38 +46,65 @@ class InitCommand extends Command
             $env = [];
         }
 
-        $env['BUNNY_API_ACCESS_KEY'] = $this->ask(
-            'What is your api key?',
-            $this->option('api-key') ?? $env['BUNNY_API_ACCESS_KEY'] ?? null
-        );
+        $this->newLine();
 
-        config()->set('bunny.api.access_key', $env['BUNNY_API_ACCESS_KEY']);
+        $this->info('In order for the Bunny CLI to work properly you need to store your Bunny CDN API token.');
+        $this->info('You can find your API Token in your Account Settings (https://panel.bunny.net/account).');
 
-        $storageZones = new Collection($client->getStorageZones()->getData());
+        do {
+            $env['BUNNY_API_ACCESS_KEY'] = $this->ask(
+                'What is your API Token?',
+                $this->option('api-key') ?? $env['BUNNY_API_ACCESS_KEY'] ?? null
+            );
+
+            config()->set('bunny.api.access_key', $env['BUNNY_API_ACCESS_KEY']);
+
+            $result = $client->getStorageZones();
+
+            if (!$result->success()) {
+                $this->warn('Your API Token is invalid. Please try again.');
+            }
+
+            $storageZones = new Collection($result->getData());
+        } while (!$result->success() || $storageZones->isEmpty());
 
         if (!$this->option('no-interaction')) {
+            $this->info('Please select your default storage zone below. This is used for the deploy command.');
+
+            $this->newLine();
+
             $storageZones->each(fn($item) => $this->info(sprintf(' - %s', $item->Name)));
         }
 
-        $storageZoneName = $this->anticipate(
-            'Which storage zone do you want to use?',
-            function ($input) use ($storageZones) {
-                return $storageZones->filter(function ($item) use ($input) {
-                    // replace stristr with your choice of matching function
-                    return false !== stristr($item->Name, $input);
-                })->pluck('Name')->toArray();
-            },
-            $this->option('storage-zone')
-        );
+        do {
+            $storageZoneName = $this->anticipate(
+                'Which storage zone do you want to use?',
+                function ($input) use ($storageZones) {
+                    return $storageZones->filter(function ($item) use ($input) {
+                        // replace stristr with your choice of matching function
+                        return false !== stristr($item->Name, $input);
+                    })->pluck('Name')->toArray();
+                },
+                $this->option('storage-zone') ?? $env['BUNNY_STORAGE_USERNAME'] ?? null
+            );
 
-        $storageZone = $storageZones->where('Name', '===', $storageZoneName)->first();
+            $storageZone = $storageZones->where('Name', '===', $storageZoneName)->first();
 
-        $env['BUNNY_STORAGE_USERNAME'] = $storageZone->Name;
-        $env['BUNNY_STORAGE_PASSWORD'] = $storageZone->Password;
+            if (!$storageZone) {
+                $this->warn(sprintf('Cannot find storage zone by `%s`. Please check your spelling.', $storageZoneName));
+            } else {
+                $env['BUNNY_STORAGE_USERNAME'] = $storageZone->Name;
+                $env['BUNNY_STORAGE_PASSWORD'] = $storageZone->Password;
+            }
+        } while ($storageZone === null);
 
         $pullZones = new Collection($storageZone->PullZones);
 
         if (!$this->option('no-interaction')) {
+            $this->info('Now select your pull zone whose cache you want to flush when the deploy is complete.');
+
+            $this->newLine();
+
             $pullZones->each(fn($item) => $this->info(sprintf(' - %s', $item->Name)));
         }
 
@@ -104,7 +131,15 @@ class InitCommand extends Command
 
         Storage::put('.env', EnvSetCommand::updateEnv($env));
 
-        $this->info('The environment file was successfully updated.');
+        $this->info('The environment file was successfully updated!');
+
+        $this->info('You can view these environment variables at any other time using the <comment>bunny env:list</comment> command.');
+
+        $this->info('If you need help, please check out our documentation: <comment>https://github.com/own3d/bunny-cli</comment>');
+
+        $this->newLine();
+
+        $this->info('Thanks for using Bunny CLI!');
 
         return 0;
     }
