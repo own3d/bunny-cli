@@ -31,7 +31,7 @@ class EnvRestoreCommand extends Command
     {
         $this->info(sprintf("The following environment file is used: '%s'", App::environmentFilePath()));
 
-        Storage::put('.env', Storage::get($this->argument('file')));
+        Storage::put('.env', Storage::get(sprintf('backups/%s', $this->argument('file'))));
 
         $this->info('The environment file was successfully restored.');
 

@@ -31,7 +31,7 @@ class EnvBackupCommand extends Command
     {
         $this->info(sprintf("The following environment file is used: '%s'", App::environmentFilePath()));
 
-        Storage::put($this->argument('file'), Storage::get('.env'));
+        Storage::put(sprintf('backups/%s', $this->argument('file')), Storage::get('.env'));
 
         $this->info('The environment file was successfully backed up.');
 
