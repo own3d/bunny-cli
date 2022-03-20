@@ -79,6 +79,7 @@ We offer you a [GitHub Action for Bunny CLI](https://github.com/marketplace/acti
     BUNNY_STORAGE_USERNAME: bunny-cli
     BUNNY_STORAGE_PASSWORD: ${{ secrets.BUNNY_STORAGE_PASSWORD }}
     BUNNY_PULL_ZONE_ID: 466588
+    BUNNY_EDGE_PATH: some_target_edge_dir
   with:
     args: deploy --dir=dist
 ```
