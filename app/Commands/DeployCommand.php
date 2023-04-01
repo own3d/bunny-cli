@@ -54,7 +54,7 @@ class DeployCommand extends Command
 
         $edgePath = sprintf('/%s', config('bunny.storage.username'));
 
-        if (config('bunny.storage.edge_path') != '') {
+        if (!empty(config('bunny.storage.edge_path'))) {
             $edgePath .= '/' . config('bunny.storage.edge_path');
             $this->info(sprintf('- Edge path is set to %s', $edgePath));
         }
