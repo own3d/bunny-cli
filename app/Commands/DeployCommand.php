@@ -7,10 +7,13 @@ use App\Bunny\Filesystem\EdgeStorage;
 use App\Bunny\Filesystem\Exceptions\FilesystemException;
 use App\Bunny\Filesystem\FileCompare;
 use App\Bunny\Filesystem\LocalStorage;
+use App\Traits\WithLocalConfiguration;
 use LaravelZero\Framework\Commands\Command;
 
 class DeployCommand extends Command
 {
+    use WithLocalConfiguration;
+
     /**
      * The signature of the command.
      *
@@ -37,6 +40,8 @@ class DeployCommand extends Command
      */
     public function handle(): int
     {
+        $this->loadLocalConfiguration();
+
         $start = microtime(true);
 
         $fileCompare = new FileCompare(
