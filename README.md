@@ -78,8 +78,8 @@ We offer you a [GitHub Action for Bunny CLI](https://github.com/marketplace/acti
     BUNNY_API_ACCESS_KEY: ${{ secrets.BUNNY_API_ACCESS_KEY }}
     BUNNY_STORAGE_USERNAME: bunny-cli
     BUNNY_STORAGE_PASSWORD: ${{ secrets.BUNNY_STORAGE_PASSWORD }}
+    BUNNY_STORAGE_PATH: some_target_edge_dir (optional)
     BUNNY_PULL_ZONE_ID: 466588
-    BUNNY_EDGE_PATH: some_target_edge_dir
   with:
     args: deploy --dir=dist
 ```
