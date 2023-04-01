@@ -49,7 +49,7 @@ class InitCommand extends Command
         $this->newLine();
 
         $this->info('In order for the Bunny CLI to work properly you need to store your Bunny CDN API token.');
-        $this->info('You can find your API Token in your Account Settings (https://panel.bunny.net/account).');
+        $this->info('You can find your API Token in your Account Settings (https://dash.bunny.net/account/settings).');
 
         do {
             $env['BUNNY_API_ACCESS_KEY'] = $this->ask(
