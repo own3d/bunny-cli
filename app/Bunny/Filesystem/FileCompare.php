@@ -138,9 +138,11 @@ class FileCompare
         $this->command->info(sprintf($message, number_format($timeElapsedSecs, 2)));
         $this->command->newLine();
 
-        foreach ($result->getData()->Hostnames as $hostname) {
-            $schema = ($hostname->ForceSSL || $hostname->HasCertificate) ? 'https' : 'http';
-            $this->command->info(sprintf('Website URL: %s://%s', $schema, $hostname->Value));
+        if ($result->success()) {
+            foreach ($result->getData()->Hostnames as $hostname) {
+                $schema = ($hostname->ForceSSL || $hostname->HasCertificate) ? 'https' : 'http';
+                $this->command->info(sprintf('Website URL: %s://%s', $schema, $hostname->Value));
+            }
         }
     }
 
